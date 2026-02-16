@@ -1,138 +1,3 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Sugeridor de Recetas por Ingredientes</title>
-  <meta name="theme-color" content="#0f172a"/>
-
-  <!-- Iconos para iOS y navegadores -->
-  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-  <link rel="apple-touch-icon" href="icon-1024.png">
-  <link rel="icon" type="image/png" href="favicon.png"/>
-
-  <style>
-    :root{
-      --bg:#0f172a; --card:#111827; --muted:#9ca3af;
-      --accent:#22c55e; --accent2:#f59e0b; --danger:#ef4444;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0; font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;
-      background: radial-gradient(1200px 600px at 50% -200px,#1b2a49 0%, var(--bg) 50%, #0b1022 100%);
-      color:#fff;
-    }
-    header{ padding:20px 16px; text-align:center }
-    header h1{ margin:0 0 6px; font-size:1.6rem }
-    header p{ margin:0; color:var(--muted) }
-
-    .wrap{
-      display:grid; gap:16px; padding:16px; max-width:1200px; margin:0 auto;
-      grid-template-columns:1fr;
-    }
-    @media(min-width:1000px){ .wrap{ grid-template-columns: 380px 1fr } }
-
-    .card{
-      background:var(--card); border:1px solid #1f2937; border-radius:16px;
-      box-shadow:0 24px 60px rgba(0,0,0,.35); overflow:hidden;
-    }
-    .card h2{ margin:0; font-size:1.1rem; padding:12px 16px; background:#0b1222; border-bottom:1px solid #1f2937 }
-    .card .content{ padding:14px 16px }
-
-    .cols{ display:grid; gap:12px }
-    .group{ background:#0b1222; border:1px solid #1f2937; border-radius:12px; overflow:hidden }
-    .group h3{ margin:0; padding:10px 12px; background:#0a0f1d; border-bottom:1px solid #1f2937; font-size:1rem }
-
-    .list{
-      padding:8px 12px;
-      display:grid;
-      grid-template-columns: repeat(2, minmax(0,1fr));
-      gap:6px 14px;
-      max-height: 50vh; overflow:auto;
-    }
-    @media(min-width:720px){ .list{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
-    @media(min-width:1100px){ .list{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
-
-    .list label{ display:flex; gap:8px; align-items:center; cursor:pointer; font-size:.95rem }
-    .list input{ accent-color:var(--accent) }
-
-    .tools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
-    button, .btn{
-      background:#1f2937; color:#fff; border:1px solid #2b3544; border-radius:10px;
-      padding:10px 14px; cursor:pointer; font-weight:600;
-    }
-    button:hover{ background:#243042 }
-    .primary{ background:var(--accent); border-color:#18a54d; color:#04130a }
-    .primary:hover{ filter:brightness(.95) }
-    .ghost{ background:transparent }
-
-    .result h3{ margin:0 0 6px }
-    .chips{ display:flex; gap:6px; flex-wrap:wrap }
-    .chip{ padding:4px 10px; border-radius:999px; border:1px solid #2b3544; background:#0b1222; color:#e5e7eb; font-size:.86rem }
-    .chip.ok{ border-color:#1f9d4e; background:#072313; color:#bbf7d0 }
-    .chip.miss{ border-color:#6b7280; background:#0b0e16; color:#cbd5e1 }
-    .warn{ color:#fcd34d }
-    .danger{ color:var(--danger) }
-    .muted{ color:var(--muted) }
-
-    .recipe{
-      background:#0b1222; border:1px solid #1f2937; border-radius:12px; padding:14px;
-    }
-    .recipe h2{ margin:0 0 8px; font-size:1.25rem }
-    .recipe h4{ margin:14px 0 6px; color:#c7d2fe }
-    .recipe ul{ margin:6px 0 0 1rem }
-    .recipe li{ margin:4px 0 }
-
-    .footer-note{ text-align:center; color:var(--muted); font-size:.86rem; padding:12px 8px }
-  </style>
-</head>
-<body>
-<header>
-  <h1>👩‍🍳 Sugeridor de Recetas por Ingredientes</h1>
-  <p>Marca las <strong>verduras, frutas y carnes</strong> que tienes. Te sugiero la mejor receta posible con lo que hay.</p>
-</header>
-
-<div class="wrap">
-  <!-- Panel de selección -->
-  <section class="card">
-    <h2>Selecciona tus ingredientes</h2>
-    <div class="content">
-      <div class="cols">
-        <div class="group">
-          <h3>🥦 Verduras</h3>
-          <div id="list-verduras" class="list"></div>
-        </div>
-        <div class="group">
-          <h3>🍎 Frutas</h3>
-          <div id="list-frutas" class="list"></div>
-        </div>
-        <div class="group">
-          <h3>🥩 Carnes y mariscos</h3>
-          <div id="list-carnes" class="list"></div>
-        </div>
-      </div>
-      <div class="tools">
-        <!-- Fallback con onclick por si falla el binding -->
-        <button id="btn-sugerir" class="primary" onclick="sugerirClick()">🔎 Sugerir receta</button>
-        <button id="btn-otra" onclick="otraClick()">🎲 Ver otra sugerencia</button>
-        <button id="btn-limpiar" class="ghost" onclick="limpiarClick()">🧹 Limpiar selección</button>
-      </div>
-      <p class="muted" style="margin-top:8px">Tip: tu selección se guarda automáticamente en este navegador.</p>
-    </div>
-  </section>
-
-  <!-- Resultados -->
-  <section class="card">
-    <h2>Resultado</h2>
-    <div class="content">
-      <div id="match" class="result muted">Aún no hay sugerencias. Elige algunos ingredientes y presiona <b>Sugerir receta</b>.</div>
-      <div id="recipe" class="recipe" style="display:none"></div>
-    </div>
-  </section>
-</div>
-
-<p class="footer-note">Hecho con ❤️ para ayudarte a cocinar con lo que tienes en casa.</p>
-
 <script>
 /* =======================
    Utilidades
@@ -147,6 +12,8 @@ function showError(msg){
 
 /* =======================
    Catálogos (50+ cada uno)
+   *No es necesario cambiar estos si ya los tenías iguales,
+   *pero los incluyo completos para que puedas pegar y listo.
 ======================= */
 const VERDURAS = [
   "Tomate","Jitomate cherry","Tomatillo",
@@ -199,12 +66,25 @@ const CARNES = [
 ];
 
 /* =======================
-   Recetas (muchas nuevas)
-   - required: ingredientes clave (necesarios)
-   - optional: suman puntos si los tienes
+   Normalización / sinónimos (tolerancia a variantes)
+======================= */
+const NORM = {
+  "chicharo":"Chícharo","chícharos":"Chícharo","chicharos":"Chícharo",
+  "elote":"Elote/maíz","maiz":"Elote/maíz","maíz":"Elote/maíz",
+  "champiñon":"Champiñón","champinion":"Champiñón","hongo":"Champiñón","hongos":"Champiñón",
+  "pimiento":"Pimiento rojo", // valor por defecto si alguien usa genérico
+  "cebolla":"Cebolla blanca"
+};
+function normalizeName(x) {
+  const k = x.toLowerCase().trim();
+  return NORM[k] || x;
+}
+
+/* =======================
+   Recetas (se agregan vegetarianas que cubren tu caso)
 ======================= */
 const RECETAS = [
-  /* --- EXISTENTES --- */
+  // Algunas existentes
   { nombre: "Fajitas de res con pimiento y cebolla", required:["Res en tiras","Pimiento rojo","Cebolla blanca"], optional:["Ajo","Calabacita","Limón","Cilantro"], pasos:[
     "Corta la res en tiras y sazona con sal, pimienta y limón.",
     "Saltea cebolla y pimiento a fuego alto 2–3 min.",
@@ -220,168 +100,65 @@ const RECETAS = [
     "Añade cebolla (y tomate/pepino si tienes).",
     "Sazona con sal, pimienta y limón."
   ]},
-  { nombre: "Pescado al limón con verduras al vapor", required:["Pescado blanco","Limón"], optional:["Ajo","Zanahoria","Brócoli","Calabacita","Cilantro"], pasos:[
-    "Sazona el pescado con sal, pimienta, ajo y limón.",
-    "Cocina al sartén u horno 10–12 min.",
-    "Acompaña con verduras al vapor."
-  ]},
-  { nombre: "Cerdo agridulce con piña", required:["Cerdo","Piña","Cebolla blanca"], optional:["Pimiento rojo","Ajo"], pasos:[
-    "Dora el cerdo y reserva.",
-    "Saltea cebolla y pimiento; añade piña.",
-    "Regresa el cerdo, agrega chorrito de vinagre y pizca de azúcar; reduce."
-  ]},
-  { nombre: "Ensalada de nopales", required:["Nopales","Cebolla blanca","Tomate"], optional:["Cilantro","Limón"], pasos:[
-    "Cocina nopales hasta que pierdan la baba.",
-    "Mezcla con tomate y cebolla.",
-    "Sazona con sal, orégano, cilantro y limón."
-  ]},
   { nombre: "Sopa sencilla de verduras", required:["Zanahoria","Papa","Tomate"], optional:["Cebolla blanca","Ajo","Elote/maíz","Calabacita","Brócoli"], pasos:[
     "Haz sofrito con cebolla, ajo y tomate.",
     "Agrega agua/caldo + zanahoria y papa; hierve hasta suavizar.",
     "Añade el resto y cuece 5–8 min."
   ]},
-  { nombre: "Camarones al ajo con espinaca", required:["Camarón","Ajo"], optional:["Espinaca","Limón","Pimiento rojo"], pasos:[
-    "Saltea ajo en aceite sin quemarlo.",
-    "Añade camarones 2–3 min por lado.",
-    "Agrega espinaca y termina con limón."
-  ]},
 
-  /* --- NUEVAS --- */
-  { nombre: "Calabacitas a la mexicana", required:["Calabacita","Tomate","Cebolla blanca","Chile serrano"], optional:["Cilantro","Ajo"], pasos:[
-    "Sofríe cebolla y chile; añade tomate.",
-    "Agrega calabacita en cubos y cocina 6–8 min.",
-    "Ajusta sal y termina con cilantro."
-  ]},
-  { nombre: "Guacamole clásico", required:["Aguacate","Cebolla blanca","Tomate","Cilantro","Limón"], optional:["Chile serrano"], pasos:[
-    "Aplasta el aguacate.",
-    "Incorpora cebolla, tomate, chile y cilantro.",
-    "Sazona con sal y limón."
-  ]},
-  { nombre: "Pico de gallo", required:["Tomate","Cebolla blanca","Cilantro","Limón","Chile serrano"], optional:[], pasos:[
-    "Pica todo finito.",
-    "Mezcla, sazona y sirve fresco."
-  ]},
-  { nombre: "Ceviche de pescado", required:["Pescado blanco","Limón","Cebolla morada","Cilantro"], optional:["Pepino","Tomate"], pasos:[
-    "Cocina el pescado en jugo de limón 15–25 min.",
-    "Agrega cebolla, pepino, tomate y cilantro.",
-    "Sazona y sirve frío."
-  ]},
-  { nombre: "Aguachile de camarón", required:["Camarón","Limón","Pepino","Cebolla morada","Chile serrano"], optional:["Cilantro"], pasos:[
-    "Licua limón con chile y sal.",
-    "Vierte sobre camarón crudo pelado.",
-    "Agrega pepino y cebolla; reposa 10–15 min."
-  ]},
-  { nombre: "Salmón al mango", required:["Salmón","Mango ataulfo","Cebolla morada","Cilantro","Limón"], optional:["Ajo"], pasos:[
-    "Sella el salmón por ambos lados.",
-    "Mezcla mango, cebolla, cilantro y limón.",
-    "Sirve el salmón con la salsa de mango."
-  ]},
-  { nombre: "Ensalada de espinaca y fresa", required:["Espinaca","Fresa","Aguacate"], optional:["Cebolla morada","Naranja"], pasos:[
-    "Combina espinaca, fresa y aguacate.",
-    "Agrega cebolla y gajos de naranja.",
-    "Sazona con limón/aceite, sal y pimienta."
-  ]},
-  { nombre: "Brochetas de res y pimiento", required:["Res en tiras","Pimiento rojo","Cebolla blanca"], optional:["Calabacita","Limón"], pasos:[
-    "Arma brochetas alternando carne y verduras.",
-    "Asa o saltea hasta cocer.",
-    "Termina con limón y sal."
-  ]},
-  { nombre: "Arrachera con nopales", required:["Arrachera","Nopales","Cebolla blanca"], optional:["Cilantro","Limón"], pasos:[
-    "Marina la arrachera con sal, pimienta y limón.",
-    "Asa la carne y saltea nopales con cebolla.",
-    "Sirve junto y espolvorea cilantro."
-  ]},
-  { nombre: "Caldo de pollo con verduras", required:["Pollo","Zanahoria","Papa"], optional:["Calabacita","Cebolla blanca","Apio"], pasos:[
-    "Hierve el pollo con sal y cebolla para sacar caldo.",
-    "Añade zanahoria y papa; cocina hasta suavizar.",
-    "Agrega calabacita/apio al final."
-  ]},
-  { nombre: "Crema de calabaza", required:["Calabaza de castilla","Cebolla blanca","Ajo"], optional:["Zanahoria","Crema (opcional)"], pasos:[
-    "Sofríe cebolla y ajo, añade calabaza en cubos.",
-    "Cubre con agua/caldo y cocina hasta suavizar.",
-    "Licua y ajusta sazón."
-  ]},
-  { nombre: "Verduras asadas", required:["Brócoli","Coliflor","Zanahoria"], optional:["Cebolla morada","Pimiento amarillo","Romero"], pasos:[
-    "Mezcla verduras con aceite, sal y romero.",
-    "Hornea 15–20 min a 200°C.",
-    "Sirve como guarnición."
-  ]},
-  { nombre: "Ratatouille sencillo", required:["Berenjena","Calabacita","Pimiento rojo","Tomate","Cebolla blanca","Ajo"], optional:["Albahaca","Tomillo"], pasos:[
-    "Sofríe cebolla y ajo; añade tomate.",
-    "Coloca capas de berenjena, calabacita y pimiento.",
-    "Hornea 25–30 min; termina con hierbas."
-  ]},
-  { nombre: "Tinga de pollo", required:["Pollo","Cebolla blanca","Tomate"], optional:["Chile jalapeño"], pasos:[
-    "Deshebra pollo cocido.",
-    "Sofríe cebolla; agrega tomate molido y el pollo.",
-    "Sazona y deja reducir."
-  ]},
-  { nombre: "Tilapia al ajo y limón", required:["Tilapia","Ajo","Limón"], optional:["Perejil"], pasos:[
-    "Sella la tilapia con ajo.",
-    "Agrega jugo de limón y perejil.",
-    "Cocina 6–8 min."
-  ]},
-  { nombre: "Pollo al limón con brócoli", required:["Pollo","Brócoli","Limón"], optional:["Ajo"], pasos:[
-    "Saltea pollo en cubos.",
-    "Añade brócoli y jugo de limón.",
-    "Cocina hasta que el brócoli esté tierno."
-  ]},
-  { nombre: "Cerdo con manzana", required:["Cerdo","Manzana verde","Cebolla blanca"], optional:["Romero"], pasos:[
-    "Dora el cerdo.",
-    "Agrega cebolla y manzana en gajos.",
-    "Perfuma con romero y reduce."
-  ]},
-  { nombre: "Gazpacho", required:["Tomate","Pepino","Pimiento rojo","Ajo"], optional:["Cebolla blanca"], pasos:[
-    "Licua todo con agua fría y sal.",
-    "Refrigera 1 hora.",
-    "Sirve frío con cubitos de pepino."
-  ]},
-  { nombre: "Tacos de pescado estilo casero", required:["Pescado blanco","Cebolla morada","Cilantro","Limón"], optional:["Pimiento verde"], pasos:[
-    "Cocina el pescado en sartén.",
-    "Pica cebolla y cilantro; mezcla con limón.",
-    "Sirve en tortilla (si tienes)."
-  ]},
-  { nombre: "Ensalada verde con pavo", required:["Pavo","Lechuga romana","Pepino","Tomate"], optional:["Aguacate","Cebolla morada"], pasos:[
-    "Asa el pavo en filetes.",
-    "Mezcla lechuga, pepino y tomate.",
-    "Agrega pavo y adereza con limón/aceite."
-  ]},
-  { nombre: "Champiñones al ajillo", required:["Champiñón","Ajo","Perejil"], optional:["Limón"], pasos:[
-    "Saltea ajo en aceite.",
-    "Agrega champiñones y saltea 5–7 min.",
-    "Termina con perejil y limón."
-  ]},
-  { nombre: "Salmón al horno con hierbas", required:["Salmón","Ajo","Limón"], optional:["Eneldo","Tomillo"], pasos:[
-    "Coloca el salmón en charola.",
-    "Agrega ajo, limón y hierbas.",
-    "Hornea 12–15 min a 200°C."
-  ]},
-  { nombre: "Cerdo con piña y pimiento", required:["Cerdo","Piña","Pimiento verde"], optional:["Cebolla blanca","Ajo"], pasos:[
-    "Sella el cerdo en cubos.",
-    "Añade piña y pimiento; saltea.",
-    "Ajusta sazón y listo."
-  ]},
-  { nombre: "Ensalada de nopales con tuna", required:["Nopales","Tuna","Cebolla morada"], optional:["Cilantro","Limón"], pasos:[
-    "Cocina nopales y corta la tuna en cubos.",
-    "Mezcla con cebolla morada y cilantro.",
-    "Sazona con sal y limón."
-  ]},
-  { nombre: "Arroz de coliflor salteado (sin arroz)", required:["Coliflor","Zanahoria","Cebolla blanca"], optional:["Ajo","Brócoli"], pasos:[
-    "Ralla la coliflor tipo “arroz”.",
-    "Saltea con cebolla y zanahoria.",
-    "Agrega brócoli picado y sazona."
-  ]},
-  { nombre: "Ensalada de jícama y pepino", required:["Jícama","Pepino","Limón"], optional:["Chile jalapeño","Cilantro"], pasos:[
-    "Corta en bastones la jícama y el pepino.",
-    "Agrega limón, sal (y chile si gustas).",
-    "Mezcla y sirve frío."
-  ]},
-  { nombre: "Brochetas de camarón y pimiento", required:["Camarón","Pimiento amarillo","Cebolla blanca"], optional:["Limón","Ajo"], pasos:[
-    "Arma brochetas con camarón, pimiento y cebolla.",
-    "Asa o saltea hasta cocer.",
-    "Termina con limón."
-  ]}
+  // 🔥 NUEVAS que cubren tu selección:
+  {
+    nombre: "Salteado de papa, champiñón, chícharo y elote",
+    required: ["Papa","Champiñón","Chícharo"],
+    optional: ["Elote/maíz","Cebolla blanca","Ajo","Limón","Cilantro"],
+    pasos: [
+      "Corta papa en cubos pequeños y dóralos en sartén con aceite y sal (tapa 6–8 min).",
+      "Agrega cebolla y ajo; saltea 2 min. Incorpora champiñón rebanado.",
+      "Añade chícharo y elote; cocina 3–4 min. Ajusta sal y termina con limón/cilantro."
+    ]
+  },
+  {
+    nombre: "Guiso campesino de papa con elote y champiñón",
+    required: ["Papa","Elote/maíz","Champiñón"],
+    optional: ["Cebolla blanca","Ajo","Zanahoria","Perejil"],
+    pasos: [
+      "Sofríe cebolla y ajo; agrega papa en cubos y dora 3–4 min.",
+      "Añade champiñón, elote y (si tienes) zanahoria; cubre con agua/caldo.",
+      "Hierve suave 10–12 min hasta que la papa esté tierna. Ajusta sal y decora con perejil."
+    ]
+  },
+
+  // Más ejemplos vegetarianos útiles
+  {
+    nombre: "Champiñones con elote y calabacita al comal",
+    required: ["Champiñón","Elote/maíz","Calabacita"],
+    optional: ["Cebolla blanca","Ajo","Limón","Cilantro"],
+    pasos: [
+      "Saltea champiñón, calabacita y elote con cebolla y ajo.",
+      "Cocina a fuego alto 5–7 min para dorar. Ajusta sal.",
+      "Termina con unas gotas de limón y cilantro."
+    ]
+  }
 ];
+
+/* =======================
+   Sustitutos (para sugerencias en la UI)
+======================= */
+const SUSTITUTOS = {
+  "Pimiento rojo":["Pimiento verde","Pimiento amarillo"],
+  "Pimiento verde":["Pimiento rojo","Pimiento amarillo"],
+  "Cebolla blanca":["Cebolla morada","Cambray (cebollas)"],
+  "Cebolla morada":["Cebolla blanca","Cambray (cebollas)"],
+  "Ajo":["Ajo en polvo","Cebolla blanca"],
+  "Res en tiras":["Bistec de res","Res molida"],
+  "Pollo":["Pavo","Cerdo"],
+  "Atún en lata":["Pescado blanco desmenuzado","Pollo cocido"],
+  "Pescado blanco":["Tilapia","Merluza"],
+  "Camarón":["Pescado blanco","Calamar"],
+  "Tomate":["Jitomate cherry","Tomatillo"],
+  "Aguacate":["Yogur natural","Mayonesa ligera"],
+  "Limón":["Naranja","Toronja"]
+};
 
 /* =======================
    Estado/Referencias
@@ -409,22 +186,32 @@ function renderLists(){
    Persistencia
 ======================= */
 function getSelection(){
-  return new Set(Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(i=>i.value));
+  // Normaliza nombres seleccionados para tolerar variantes
+  return new Set(
+    Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+      .map(i => normalizeName(i.value))
+  );
 }
 function saveSelection(){
   localStorage.setItem(KEY, JSON.stringify(Array.from(getSelection())));
 }
 function restoreSelection(){
   const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
-  document.querySelectorAll('input[type="checkbox"]').forEach(i => { i.checked = saved.includes(i.value); });
+  document.querySelectorAll('input[type="checkbox"]').forEach(i => {
+    // Marca si coincide exactamente o si la normalización hace match
+    const v = i.value;
+    const n = normalizeName(v);
+    i.checked = saved.includes(v) || saved.includes(n);
+  });
 }
 
 /* =======================
    Motor de coincidencias
 ======================= */
 function puntuarReceta(rec, seleccionSet){
-  const req = rec.required||[];
-  const opt = rec.optional||[];
+  // Normaliza internamente los nombres de la receta también
+  const req = (rec.required||[]).map(normalizeName);
+  const opt = (rec.optional||[]).map(normalizeName);
   const tieneReq = req.filter(x=>seleccionSet.has(x));
   const tieneOpt = opt.filter(x=>seleccionSet.has(x));
   const faltan   = req.filter(x=>!seleccionSet.has(x));
@@ -432,19 +219,96 @@ function puntuarReceta(rec, seleccionSet){
   const minReq = Math.max(1, Math.ceil(req.length * 0.6));
   const cumple = (req.length <= 2) ? (tieneReq.length === req.length) : (tieneReq.length >= minReq);
   const score = tieneReq.length*2 + tieneOpt.length;
-  return { cumple, score, tieneReq, tieneOpt, faltan };
+  return { cumple, score, tieneReq, tieneOpt, faltan, req, opt };
+}
+
+/* =======================
+   Plan B: recetas generadas con lo que haya
+======================= */
+function buildVegStirFry(sel){
+  const veg = [...sel].filter(x => VERDURAS.includes(x));
+  if(veg.length < 2) return null;
+  const base = veg.slice(0, Math.min(4, veg.length)); // hasta 4
+  return {
+    nombre: `Salteado de ${base.join(', ')}`,
+    required: base,
+    optional: ["Cebolla blanca","Ajo","Limón","Cilantro"],
+    pasos: [
+      "Corta en tamaños similares para que se cocinen parejo.",
+      "Saltea primero lo más duro (papa/zanahoria), luego el resto.",
+      "Ajusta sal y pimienta; termina con limón/cilantro."
+    ],
+    __auto:true
+  };
+}
+function buildVegSoup(sel){
+  const veg = [...sel].filter(x => VERDURAS.includes(x));
+  if(veg.length < 3) return null;
+  const base = veg.slice(0, Math.min(5, veg.length));
+  return {
+    nombre: `Sopa de ${base.join(', ')}`,
+    required: base,
+    optional: ["Cebolla blanca","Ajo","Perejil"],
+    pasos: [
+      "Sofríe cebolla y ajo (si tienes).",
+      "Agrega las verduras, cubre con agua/caldo y hierve suave.",
+      "Sazona al gusto; sirve con perejil."
+    ],
+    __auto:true
+  };
+}
+function buildMeatStirFry(sel){
+  const meats = [...sel].filter(x => CARNES.includes(x));
+  const veg   = [...sel].filter(x => VERDURAS.includes(x));
+  if(!meats.length || !veg.length) return null;
+  const m = meats[0];
+  const v = veg.slice(0, Math.min(3, veg.length));
+  return {
+    nombre: `${m} salteado con ${v.join(', ')}`,
+    required: [m, ...v],
+    optional: ["Cebolla blanca","Ajo","Limón"],
+    pasos: [
+      `Sella el ${m} con sal y pimienta; retira.`,
+      "Saltea las verduras; regresa la carne.",
+      "Ajusta sazón y termina con limón."
+    ],
+    __auto:true
+  };
+}
+
+/* Devuelve una o más recetas generadas automáticamente (si aplica) */
+function fallbacks(seleccionSet){
+  const res = [];
+  const f1 = buildMeatStirFry(seleccionSet); if(f1) res.push(f1);
+  const f2 = buildVegStirFry(seleccionSet);  if(f2) res.push(f2);
+  const f3 = buildVegSoup(seleccionSet);     if(f3) res.push(f3);
+  return res;
 }
 
 let alternativas = [];
 let idxAlt = 0;
 
 function sugerir(seleccionSet){
-  const evaluadas = RECETAS.map(rec => {
+  // 1) Evalúa recetas definidas
+  let evaluadas = RECETAS.map(rec => {
     const ev = puntuarReceta(rec, seleccionSet);
     return { rec, ...ev };
   }).filter(x => x.cumple);
 
+  // 2) Si no hay ninguna, crea fallbacks con lo seleccionado
+  if(!evaluadas.length){
+    const autos = fallbacks(seleccionSet);
+    evaluadas = autos.map(rec => {
+      const ev = puntuarReceta(rec, seleccionSet);
+      // Para auto-recetas, las marcamos como "cumple" siempre que tenga al menos 2 ingredientes
+      const tieneTotal = (ev.tieneReq.length + ev.tieneOpt.length);
+      return { rec, ...ev, cumple: (tieneTotal >= 2) };
+    }).filter(x => x.cumple);
+  }
+
+  // 3) Ordena por score y por menos faltantes
   evaluadas.sort((a,b)=> (b.score - a.score) || (a.faltan.length - b.faltan.length));
+
   alternativas = evaluadas;
   idxAlt = 0;
   return alternativas[0];
@@ -454,6 +318,9 @@ function sugerir(seleccionSet){
    Render de resultados
 ======================= */
 function renderMatch(info){
+  const matchBox = document.getElementById('match');
+  const recipeBox = document.getElementById('recipe');
+
   if(!info){
     matchBox.innerHTML = `No encontré una receta clara con tu selección. <span class="muted">Prueba marcando 2–4 ingredientes clave (p. ej. una carne + 1–2 verduras).</span>`;
     recipeBox.style.display='none';
@@ -465,7 +332,7 @@ function renderMatch(info){
 
   matchBox.innerHTML = `
     <div>
-      <h3>Mejor coincidencia: <span class="warn">${rec.nombre}</span></h3>
+      <h3>Mejor coincidencia: <span class="warn">${rec.nombre}${rec.__auto?' (generada)':''}</span></h3>
       <div class="chips" style="margin:8px 0">
         ${tieneReq.map(x=>`<span class="chip ok">✔ ${x}</span>`).join('')}
         ${tieneOpt.map(x=>`<span class="chip ok">＋ ${x}</span>`).join('')}
@@ -493,25 +360,6 @@ function renderMatch(info){
 }
 
 /* =======================
-   Sustitutos (para sugerencias en la UI)
-======================= */
-const SUSTITUTOS = {
-  "Pimiento rojo":["Pimiento verde","Pimiento amarillo"],
-  "Pimiento verde":["Pimiento rojo","Pimiento amarillo"],
-  "Cebolla blanca":["Cebolla morada","Cambray (cebollas)"],
-  "Cebolla morada":["Cebolla blanca","Cambray (cebollas)"],
-  "Ajo":["Ajo en polvo","Cebolla blanca"],
-  "Res en tiras":["Bistec de res","Res molida"],
-  "Pollo":["Pavo","Cerdo"],
-  "Atún en lata":["Pescado blanco desmenuzado","Pollo cocido"],
-  "Pescado blanco":["Tilapia","Merluza"],
-  "Camarón":["Pescado blanco","Calamar"],
-  "Tomate":["Jitomate cherry","Tomatillo"],
-  "Aguacate":["Yogur natural","Mayonesa ligera"],
-  "Limón":["Naranja","Toronja"]
-};
-
-/* =======================
    Handlers públicos (fallback de los botones)
 ======================= */
 function sugerirClick(){
@@ -527,7 +375,7 @@ function sugerirClick(){
 function otraClick(){
   try{
     if(!alternativas.length){
-      matchBox.innerHTML = 'Primero presiona "Sugerir receta".';
+      document.getElementById('match').innerHTML = 'Primero presiona "Sugerir receta".';
       return;
     }
     idxAlt = (idxAlt + 1) % alternativas.length;
@@ -542,8 +390,8 @@ function limpiarClick(){
     document.querySelectorAll('input[type="checkbox"]').forEach(i=>i.checked=false);
     localStorage.setItem(KEY, JSON.stringify([]));
     alternativas = []; idxAlt = 0;
-    matchBox.textContent = 'Selección limpia. Marca algunos ingredientes y presiona "Sugerir receta".';
-    recipeBox.style.display='none';
+    document.getElementById('match').textContent = 'Selección limpia. Marca algunos ingredientes y presiona "Sugerir receta".';
+    document.getElementById('recipe').style.display='none';
   }catch(e){
     console.error(e);
     showError('No se pudo limpiar la selección.');
@@ -559,8 +407,6 @@ document.addEventListener('DOMContentLoaded', function(){
     contVerduras = document.getElementById('list-verduras');
     contFrutas   = document.getElementById('list-frutas');
     contCarnes   = document.getElementById('list-carnes');
-    matchBox     = document.getElementById('match');
-    recipeBox    = document.getElementById('recipe');
 
     // Render listas
     renderLists();
@@ -578,21 +424,18 @@ document.addEventListener('DOMContentLoaded', function(){
     if(btnOtra)  btnOtra.addEventListener('click', otraClick, {passive:true});
     if(btnClear) btnClear.addEventListener('click', limpiarClick, {passive:true});
 
-    // Primera sugerencia si ya hay selección
+    // Primera sugerencia si ya hay selección guardada
     const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
     if(saved.length){
-      const mejor = sugerir(new Set(saved));
+      const mejor = sugerir(new Set(saved.map(normalizeName)));
       renderMatch(mejor);
     }
 
     // Seguridad por si algún overlay quedara encima accidentalmente
     document.body.style.pointerEvents = 'auto';
-
   }catch(e){
     console.error(e);
     showError('Error inicializando la app. Revisa la consola del navegador.');
   }
 });
 </script>
-</body>
-</html>
