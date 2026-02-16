@@ -27,10 +27,10 @@
     header p{ margin:0; color:var(--muted) }
 
     .wrap{
-      display:grid; gap:16px; padding:16px; max-width:1100px; margin:0 auto;
+      display:grid; gap:16px; padding:16px; max-width:1200px; margin:0 auto;
       grid-template-columns:1fr;
     }
-    @media(min-width:900px){ .wrap{ grid-template-columns: 360px 1fr } }
+    @media(min-width:1000px){ .wrap{ grid-template-columns: 380px 1fr } }
 
     .card{
       background:var(--card); border:1px solid #1f2937; border-radius:16px;
@@ -42,8 +42,18 @@
     .cols{ display:grid; gap:12px }
     .group{ background:#0b1222; border:1px solid #1f2937; border-radius:12px; overflow:hidden }
     .group h3{ margin:0; padding:10px 12px; background:#0a0f1d; border-bottom:1px solid #1f2937; font-size:1rem }
-    .list{ padding:8px 12px; display:grid; grid-template-columns: 1fr 1fr; gap:6px 14px }
-    .list label{ display:flex; gap:8px; align-items:center; cursor:pointer; font-size:.96rem }
+
+    .list{
+      padding:8px 12px;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:6px 14px;
+      max-height: 50vh; overflow:auto;
+    }
+    @media(min-width:720px){ .list{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media(min-width:1100px){ .list{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
+
+    .list label{ display:flex; gap:8px; align-items:center; cursor:pointer; font-size:.95rem }
     .list input{ accent-color:var(--accent) }
 
     .tools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
@@ -132,68 +142,246 @@ function showError(msg){
   if (box){
     box.classList.remove('muted');
     box.innerHTML = `<span style="color:#ef4444">⚠️ ${msg}</span>`;
-  } else {
-    alert(msg);
-  }
+  } else { alert(msg); }
 }
 
 /* =======================
-   Catálogos base
+   Catálogos (50+ cada uno)
 ======================= */
-const VERDURAS = ["Tomate","Cebolla","Ajo","Pimiento","Chile jalapeño","Zanahoria","Papa","Calabacita","Espinaca","Lechuga","Nopales","Brócoli","Elote/maíz","Pepino","Cilantro"];
-const FRUTAS   = ["Limón","Naranja","Manzana","Plátano","Piña","Mango","Aguacate","Fresa","Uva","Durazno","Papaya"];
-const CARNES   = ["Pollo","Res molida","Res en tiras","Cerdo","Pescado blanco","Atún en lata","Camarón"];
+const VERDURAS = [
+  "Tomate","Jitomate cherry","Tomatillo",
+  "Cebolla blanca","Cebolla morada","Cambray (cebollas)","Ajo",
+  "Pimiento rojo","Pimiento verde","Pimiento amarillo",
+  "Chile jalapeño","Chile serrano","Chile poblano",
+  "Zanahoria","Papa","Camote",
+  "Calabacita","Calabaza de castilla","Chayote",
+  "Espinaca","Acelga","Lechuga romana","Lechuga orejona","Arúgula","Kale",
+  "Nopales","Brócoli","Coliflor","Elote/maíz",
+  "Pepino","Pepinillos","Jícama","Apio",
+  "Cebollín","Poro (puerro)","Hinojo",
+  "Col (repollo)","Col morada","Col de Bruselas",
+  "Berenjena","Betabel","Rábano",
+  "Champiñón","Setas","Portobello",
+  "Ejote","Chícharo","Haba verde",
+  "Alcachofa","Espárrago","Jengibre",
+  "Cilantro","Perejil","Albahaca","Tomillo","Romero","Eneldo",
+  "Germen de soya","Yuca"
+];
 
+const FRUTAS = [
+  "Limón","Lima","Naranja","Mandarina","Toronja",
+  "Manzana roja","Manzana verde","Pera","Membrillo",
+  "Plátano","Plátano macho",
+  "Piña","Mango ataulfo","Mango tommy","Papaya",
+  "Guayaba","Fresa","Frambuesa","Mora","Zarzamora","Arándano","Grosella",
+  "Ciruela","Durazno","Chabacano","Nectarina",
+  "Uva roja","Uva verde","Pasa",
+  "Melón cantalupo","Melón honeydew","Sandía",
+  "Granada","Higo","Caqui","Kiwi","Carambola",
+  "Maracuyá","Granadilla","Lichi","Rambután","Tamarindo",
+  "Pitahaya","Tuna",
+  "Mamey","Zapote negro","Zapote blanco","Chicozapote",
+  "Nance","Capulín","Tejocote","Pera asiática","Kumquat","Cereza",
+  "Coco","Dátil","Guanábana","Chirimoya","Atemoya","Uchuva","Tamarillo","Pepino dulce","Aguacate"
+];
+
+const CARNES = [
+  "Pollo","Pechuga de pollo","Muslo de pollo","Pavo",
+  "Res molida","Res en tiras","Bistec de res","Arrachera","Falda de res","Costilla de res","Tuétano de res",
+  "Cerdo","Lomo de cerdo","Pierna de cerdo","Costilla de cerdo","Tocino","Chuleta de cerdo",
+  "Cordero","Pierna de cordero","Costilla de cordero","Cabrito","Conejo","Pato",
+  "Jamón","Chorizo","Longaniza","Salchicha",
+  "Atún en lata","Sardinas en lata",
+  "Pescado blanco","Tilapia","Mero","Huachinango","Pargo","Dorado (mahi‑mahi)","Robalo",
+  "Bacalao","Salmón","Trucha","Atún fresco","Sierra","Jurel","Caballa","Arenque",
+  "Bagre","Carpa","Mojarra","Merluza","Halibut (fletán)","Corvina","Lubina (sea bass)","Pez espada","Bonito",
+  "Camarón","Langostino","Pulpo","Calamar","Almeja","Mejillón","Ostión","Jaiba","Cangrejo","Langosta","Callo de hacha","Surimi"
+];
+
+/* =======================
+   Recetas (muchas nuevas)
+   - required: ingredientes clave (necesarios)
+   - optional: suman puntos si los tienes
+======================= */
 const RECETAS = [
-  { nombre: "Fajitas de res con pimiento y cebolla", required:["Res en tiras","Pimiento","Cebolla"], optional:["Ajo","Calabacita","Limón","Cilantro"], pasos:[
-    "Corta la res en tiras si no lo está. Sazona con sal, pimienta y un chorrito de limón.",
+  /* --- EXISTENTES --- */
+  { nombre: "Fajitas de res con pimiento y cebolla", required:["Res en tiras","Pimiento rojo","Cebolla blanca"], optional:["Ajo","Calabacita","Limón","Cilantro"], pasos:[
+    "Corta la res en tiras y sazona con sal, pimienta y limón.",
     "Saltea cebolla y pimiento a fuego alto 2–3 min.",
-    "Agrega la carne y cocina 3–5 min más. Ajusta sal y sirve con cilantro."
+    "Agrega la carne y cocina 3–5 min más. Termina con cilantro."
   ]},
-  { nombre: "Tacos de pollo con verduras salteadas", required:["Pollo","Cebolla","Pimiento"], optional:["Ajo","Calabacita","Cilantro","Limón","Tomate"], pasos:[
-    "Corta el pollo en cubos; sazona con sal, pimienta y ajo.",
-    "Saltea cebolla y pimiento; incorpora el pollo hasta cocer.",
-    "Termina con cilantro y unas gotas de limón. Sirve en tortillas."
+  { nombre: "Tacos de pollo con verduras salteadas", required:["Pollo","Cebolla blanca","Pimiento verde"], optional:["Ajo","Calabacita","Cilantro","Limón","Tomate"], pasos:[
+    "Corta el pollo en cubos y sazona.",
+    "Saltea cebolla y pimiento; agrega el pollo hasta cocer.",
+    "Termina con cilantro y limón."
   ]},
-  { nombre: "Ensalada de atún con aguacate", required:["Atún en lata","Aguacate","Cebolla"], optional:["Tomate","Cilantro","Limón","Pepino"], pasos:[
+  { nombre: "Ensalada de atún con aguacate", required:["Atún en lata","Aguacate","Cebolla blanca"], optional:["Tomate","Cilantro","Limón","Pepino"], pasos:[
     "Escurre el atún y mézclalo con aguacate en cubos.",
     "Añade cebolla (y tomate/pepino si tienes).",
-    "Sazona con sal, pimienta y limón. Sirve frío."
+    "Sazona con sal, pimienta y limón."
   ]},
   { nombre: "Pescado al limón con verduras al vapor", required:["Pescado blanco","Limón"], optional:["Ajo","Zanahoria","Brócoli","Calabacita","Cilantro"], pasos:[
     "Sazona el pescado con sal, pimienta, ajo y limón.",
-    "Cocina al sartén o al horno 10–12 min.",
-    "Acompaña con verduras al vapor y un toque de cilantro."
+    "Cocina al sartén u horno 10–12 min.",
+    "Acompaña con verduras al vapor."
   ]},
-  { nombre: "Cerdo agridulce con piña", required:["Cerdo","Piña","Cebolla"], optional:["Pimiento","Ajo"], pasos:[
-    "Dora cubos de cerdo; retira.",
-    "En la misma sartén saltea cebolla y pimiento; añade piña.",
-    "Regresa el cerdo y baña con mezcla de jugo de piña + chorrito de vinagre + pizca de azúcar. Reduce y sirve."
+  { nombre: "Cerdo agridulce con piña", required:["Cerdo","Piña","Cebolla blanca"], optional:["Pimiento rojo","Ajo"], pasos:[
+    "Dora el cerdo y reserva.",
+    "Saltea cebolla y pimiento; añade piña.",
+    "Regresa el cerdo, agrega chorrito de vinagre y pizca de azúcar; reduce."
   ]},
-  { nombre: "Ensalada de nopales", required:["Nopales","Cebolla","Tomate"], optional:["Cilantro","Limón"], pasos:[
-    "Hierve o saltea los nopales hasta que pierdan la baba.",
-    "Mezcla con tomate y cebolla en pluma.",
+  { nombre: "Ensalada de nopales", required:["Nopales","Cebolla blanca","Tomate"], optional:["Cilantro","Limón"], pasos:[
+    "Cocina nopales hasta que pierdan la baba.",
+    "Mezcla con tomate y cebolla.",
     "Sazona con sal, orégano, cilantro y limón."
   ]},
-  { nombre: "Sopa sencilla de verduras", required:["Zanahoria","Papa","Tomate"], optional:["Cebolla","Ajo","Elote/maíz","Calabacita","Brócoli"], pasos:[
-    "Haz un sofrito con cebolla, ajo y tomate.",
-    "Agrega agua o caldo, zanahoria y papa en cubos; hierve hasta suavizar.",
-    "Añade el resto de verduras y cuece 5–8 min. Rectifica sal."
+  { nombre: "Sopa sencilla de verduras", required:["Zanahoria","Papa","Tomate"], optional:["Cebolla blanca","Ajo","Elote/maíz","Calabacita","Brócoli"], pasos:[
+    "Haz sofrito con cebolla, ajo y tomate.",
+    "Agrega agua/caldo + zanahoria y papa; hierve hasta suavizar.",
+    "Añade el resto y cuece 5–8 min."
   ]},
-  { nombre: "Camarones al ajo con espinaca", required:["Camarón","Ajo"], optional:["Espinaca","Limón","Pimiento"], pasos:[
+  { nombre: "Camarones al ajo con espinaca", required:["Camarón","Ajo"], optional:["Espinaca","Limón","Pimiento rojo"], pasos:[
     "Saltea ajo en aceite sin quemarlo.",
-    "Añade los camarones y cocina 2–3 min por lado.",
-    "Agrega espinaca para que se marchite. Termina con limón."
+    "Añade camarones 2–3 min por lado.",
+    "Agrega espinaca y termina con limón."
+  ]},
+
+  /* --- NUEVAS --- */
+  { nombre: "Calabacitas a la mexicana", required:["Calabacita","Tomate","Cebolla blanca","Chile serrano"], optional:["Cilantro","Ajo"], pasos:[
+    "Sofríe cebolla y chile; añade tomate.",
+    "Agrega calabacita en cubos y cocina 6–8 min.",
+    "Ajusta sal y termina con cilantro."
+  ]},
+  { nombre: "Guacamole clásico", required:["Aguacate","Cebolla blanca","Tomate","Cilantro","Limón"], optional:["Chile serrano"], pasos:[
+    "Aplasta el aguacate.",
+    "Incorpora cebolla, tomate, chile y cilantro.",
+    "Sazona con sal y limón."
+  ]},
+  { nombre: "Pico de gallo", required:["Tomate","Cebolla blanca","Cilantro","Limón","Chile serrano"], optional:[], pasos:[
+    "Pica todo finito.",
+    "Mezcla, sazona y sirve fresco."
+  ]},
+  { nombre: "Ceviche de pescado", required:["Pescado blanco","Limón","Cebolla morada","Cilantro"], optional:["Pepino","Tomate"], pasos:[
+    "Cocina el pescado en jugo de limón 15–25 min.",
+    "Agrega cebolla, pepino, tomate y cilantro.",
+    "Sazona y sirve frío."
+  ]},
+  { nombre: "Aguachile de camarón", required:["Camarón","Limón","Pepino","Cebolla morada","Chile serrano"], optional:["Cilantro"], pasos:[
+    "Licua limón con chile y sal.",
+    "Vierte sobre camarón crudo pelado.",
+    "Agrega pepino y cebolla; reposa 10–15 min."
+  ]},
+  { nombre: "Salmón al mango", required:["Salmón","Mango ataulfo","Cebolla morada","Cilantro","Limón"], optional:["Ajo"], pasos:[
+    "Sella el salmón por ambos lados.",
+    "Mezcla mango, cebolla, cilantro y limón.",
+    "Sirve el salmón con la salsa de mango."
+  ]},
+  { nombre: "Ensalada de espinaca y fresa", required:["Espinaca","Fresa","Aguacate"], optional:["Cebolla morada","Naranja"], pasos:[
+    "Combina espinaca, fresa y aguacate.",
+    "Agrega cebolla y gajos de naranja.",
+    "Sazona con limón/aceite, sal y pimienta."
+  ]},
+  { nombre: "Brochetas de res y pimiento", required:["Res en tiras","Pimiento rojo","Cebolla blanca"], optional:["Calabacita","Limón"], pasos:[
+    "Arma brochetas alternando carne y verduras.",
+    "Asa o saltea hasta cocer.",
+    "Termina con limón y sal."
+  ]},
+  { nombre: "Arrachera con nopales", required:["Arrachera","Nopales","Cebolla blanca"], optional:["Cilantro","Limón"], pasos:[
+    "Marina la arrachera con sal, pimienta y limón.",
+    "Asa la carne y saltea nopales con cebolla.",
+    "Sirve junto y espolvorea cilantro."
+  ]},
+  { nombre: "Caldo de pollo con verduras", required:["Pollo","Zanahoria","Papa"], optional:["Calabacita","Cebolla blanca","Apio"], pasos:[
+    "Hierve el pollo con sal y cebolla para sacar caldo.",
+    "Añade zanahoria y papa; cocina hasta suavizar.",
+    "Agrega calabacita/apio al final."
+  ]},
+  { nombre: "Crema de calabaza", required:["Calabaza de castilla","Cebolla blanca","Ajo"], optional:["Zanahoria","Crema (opcional)"], pasos:[
+    "Sofríe cebolla y ajo, añade calabaza en cubos.",
+    "Cubre con agua/caldo y cocina hasta suavizar.",
+    "Licua y ajusta sazón."
+  ]},
+  { nombre: "Verduras asadas", required:["Brócoli","Coliflor","Zanahoria"], optional:["Cebolla morada","Pimiento amarillo","Romero"], pasos:[
+    "Mezcla verduras con aceite, sal y romero.",
+    "Hornea 15–20 min a 200°C.",
+    "Sirve como guarnición."
+  ]},
+  { nombre: "Ratatouille sencillo", required:["Berenjena","Calabacita","Pimiento rojo","Tomate","Cebolla blanca","Ajo"], optional:["Albahaca","Tomillo"], pasos:[
+    "Sofríe cebolla y ajo; añade tomate.",
+    "Coloca capas de berenjena, calabacita y pimiento.",
+    "Hornea 25–30 min; termina con hierbas."
+  ]},
+  { nombre: "Tinga de pollo", required:["Pollo","Cebolla blanca","Tomate"], optional:["Chile jalapeño"], pasos:[
+    "Deshebra pollo cocido.",
+    "Sofríe cebolla; agrega tomate molido y el pollo.",
+    "Sazona y deja reducir."
+  ]},
+  { nombre: "Tilapia al ajo y limón", required:["Tilapia","Ajo","Limón"], optional:["Perejil"], pasos:[
+    "Sella la tilapia con ajo.",
+    "Agrega jugo de limón y perejil.",
+    "Cocina 6–8 min."
+  ]},
+  { nombre: "Pollo al limón con brócoli", required:["Pollo","Brócoli","Limón"], optional:["Ajo"], pasos:[
+    "Saltea pollo en cubos.",
+    "Añade brócoli y jugo de limón.",
+    "Cocina hasta que el brócoli esté tierno."
+  ]},
+  { nombre: "Cerdo con manzana", required:["Cerdo","Manzana verde","Cebolla blanca"], optional:["Romero"], pasos:[
+    "Dora el cerdo.",
+    "Agrega cebolla y manzana en gajos.",
+    "Perfuma con romero y reduce."
+  ]},
+  { nombre: "Gazpacho", required:["Tomate","Pepino","Pimiento rojo","Ajo"], optional:["Cebolla blanca"], pasos:[
+    "Licua todo con agua fría y sal.",
+    "Refrigera 1 hora.",
+    "Sirve frío con cubitos de pepino."
+  ]},
+  { nombre: "Tacos de pescado estilo casero", required:["Pescado blanco","Cebolla morada","Cilantro","Limón"], optional:["Pimiento verde"], pasos:[
+    "Cocina el pescado en sartén.",
+    "Pica cebolla y cilantro; mezcla con limón.",
+    "Sirve en tortilla (si tienes)."
+  ]},
+  { nombre: "Ensalada verde con pavo", required:["Pavo","Lechuga romana","Pepino","Tomate"], optional:["Aguacate","Cebolla morada"], pasos:[
+    "Asa el pavo en filetes.",
+    "Mezcla lechuga, pepino y tomate.",
+    "Agrega pavo y adereza con limón/aceite."
+  ]},
+  { nombre: "Champiñones al ajillo", required:["Champiñón","Ajo","Perejil"], optional:["Limón"], pasos:[
+    "Saltea ajo en aceite.",
+    "Agrega champiñones y saltea 5–7 min.",
+    "Termina con perejil y limón."
+  ]},
+  { nombre: "Salmón al horno con hierbas", required:["Salmón","Ajo","Limón"], optional:["Eneldo","Tomillo"], pasos:[
+    "Coloca el salmón en charola.",
+    "Agrega ajo, limón y hierbas.",
+    "Hornea 12–15 min a 200°C."
+  ]},
+  { nombre: "Cerdo con piña y pimiento", required:["Cerdo","Piña","Pimiento verde"], optional:["Cebolla blanca","Ajo"], pasos:[
+    "Sella el cerdo en cubos.",
+    "Añade piña y pimiento; saltea.",
+    "Ajusta sazón y listo."
+  ]},
+  { nombre: "Ensalada de nopales con tuna", required:["Nopales","Tuna","Cebolla morada"], optional:["Cilantro","Limón"], pasos:[
+    "Cocina nopales y corta la tuna en cubos.",
+    "Mezcla con cebolla morada y cilantro.",
+    "Sazona con sal y limón."
+  ]},
+  { nombre: "Arroz de coliflor salteado (sin arroz)", required:["Coliflor","Zanahoria","Cebolla blanca"], optional:["Ajo","Brócoli"], pasos:[
+    "Ralla la coliflor tipo “arroz”.",
+    "Saltea con cebolla y zanahoria.",
+    "Agrega brócoli picado y sazona."
+  ]},
+  { nombre: "Ensalada de jícama y pepino", required:["Jícama","Pepino","Limón"], optional:["Chile jalapeño","Cilantro"], pasos:[
+    "Corta en bastones la jícama y el pepino.",
+    "Agrega limón, sal (y chile si gustas).",
+    "Mezcla y sirve frío."
+  ]},
+  { nombre: "Brochetas de camarón y pimiento", required:["Camarón","Pimiento amarillo","Cebolla blanca"], optional:["Limón","Ajo"], pasos:[
+    "Arma brochetas con camarón, pimiento y cebolla.",
+    "Asa o saltea hasta cocer.",
+    "Termina con limón."
   ]}
 ];
-
-const SUSTITUTOS = {
-  "Pimiento":["Calabacita","Zanahoria"], "Cebolla":["Cebolla morada","Cebollín"],
-  "Ajo":["Ajo en polvo","Cebolla"], "Res en tiras":["Res molida","Cerdo"],
-  "Pollo":["Cerdo","Res en tiras"], "Atún en lata":["Pescado blanco desmenuzado","Pollo cocido"],
-  "Pescado blanco":["Filete de tilapia","Salmón"], "Camarón":["Pescado blanco","Pollo"],
-  "Tomate":["Jitomate en lata","Pimiento rojo"], "Aguacate":["Yogur natural","Mayonesa ligera"]
-};
 
 /* =======================
    Estado/Referencias
@@ -240,6 +428,7 @@ function puntuarReceta(rec, seleccionSet){
   const tieneReq = req.filter(x=>seleccionSet.has(x));
   const tieneOpt = opt.filter(x=>seleccionSet.has(x));
   const faltan   = req.filter(x=>!seleccionSet.has(x));
+  // Política: al menos 60% de requeridos (o todos si req<=2)
   const minReq = Math.max(1, Math.ceil(req.length * 0.6));
   const cumple = (req.length <= 2) ? (tieneReq.length === req.length) : (tieneReq.length >= minReq);
   const score = tieneReq.length*2 + tieneOpt.length;
@@ -302,6 +491,25 @@ function renderMatch(info){
     </ol>
   `;
 }
+
+/* =======================
+   Sustitutos (para sugerencias en la UI)
+======================= */
+const SUSTITUTOS = {
+  "Pimiento rojo":["Pimiento verde","Pimiento amarillo"],
+  "Pimiento verde":["Pimiento rojo","Pimiento amarillo"],
+  "Cebolla blanca":["Cebolla morada","Cambray (cebollas)"],
+  "Cebolla morada":["Cebolla blanca","Cambray (cebollas)"],
+  "Ajo":["Ajo en polvo","Cebolla blanca"],
+  "Res en tiras":["Bistec de res","Res molida"],
+  "Pollo":["Pavo","Cerdo"],
+  "Atún en lata":["Pescado blanco desmenuzado","Pollo cocido"],
+  "Pescado blanco":["Tilapia","Merluza"],
+  "Camarón":["Pescado blanco","Calamar"],
+  "Tomate":["Jitomate cherry","Tomatillo"],
+  "Aguacate":["Yogur natural","Mayonesa ligera"],
+  "Limón":["Naranja","Toronja"]
+};
 
 /* =======================
    Handlers públicos (fallback de los botones)
