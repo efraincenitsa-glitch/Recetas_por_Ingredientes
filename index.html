@@ -1,3 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Sugeridor de Recetas por Ingredientes</title>
+  <meta name="theme-color" content="#0f172a"/>
+
+  <!-- Iconos para iOS y navegadores -->
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="1024x1024" href="icon-1024.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+
+  <style>
+    :root{
+      --bg:#0f172a; --card:#111827; --muted:#9ca3af;
+      --accent:#22c55e; --accent2:#f59e0b; --danger:#ef4444;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      background: radial-gradient(1200px 600px at 50% -200px,#1b2a49 0%, var(--bg) 50%, #0b1022 100%);
+      color:#fff;
+    }
+    header{ padding:20px 16px; text-align:center }
+    header h1{ margin:0 0 6px; font-size:1.6rem }
+    header p{ margin:0; color:var(--muted) }
+
+    .wrap{
+      display:grid; gap:16px; padding:16px; max-width:1200px; margin:0 auto;
+      grid-template-columns:1fr;
+    }
+    @media(min-width:1000px){ .wrap{ grid-template-columns: 380px 1fr } }
+
+    .card{
+      background:var(--card); border:1px solid #1f2937; border-radius:16px;
+      box-shadow:0 24px 60px rgba(0,0,0,.35); overflow:hidden;
+    }
+    .card h2{ margin:0; font-size:1.1rem; padding:12px 16px; background:#0b1222; border-bottom:1px solid #1f2937 }
+    .card .content{ padding:14px 16px }
+
+    .cols{ display:grid; gap:12px }
+    .group{ background:#0b1222; border:1px solid #1f2937; border-radius:12px; overflow:hidden }
+    .group h3{ margin:0; padding:10px 12px; background:#0a0f1d; border-bottom:1px solid #1f2937; font-size:1rem }
+
+    .list{
+      padding:8px 12px;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:6px 14px;
+      max-height: 50vh; overflow:auto;
+    }
+    @media(min-width:720px){ .list{ grid-template-columns: repeat(3, minmax(0,1fr)); } }
+    @media(min-width:1100px){ .list{ grid-template-columns: repeat(4, minmax(0,1fr)); } }
+
+    .list label{ display:flex; gap:8px; align-items:center; cursor:pointer; font-size:.95rem }
+    .list input{ accent-color:var(--accent) }
+
+    .tools{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px }
+    button, .btn{
+      background:#1f2937; color:#fff; border:1px solid #2b3544; border-radius:10px;
+      padding:10px 14px; cursor:pointer; font-weight:600;
+    }
+    button:hover{ background:#243042 }
+    .primary{ background:var(--accent); border-color:#18a54d; color:#04130a }
+    .primary:hover{ filter:brightness(.95) }
+    .ghost{ background:transparent }
+
+    .result h3{ margin:0 0 6px }
+    .chips{ display:flex; gap:6px; flex-wrap:wrap }
+    .chip{ padding:4px 10px; border-radius:999px; border:1px solid #2b3544; background:#0b1222; color:#e5e7eb; font-size:.86rem }
+    .chip.ok{ border-color:#1f9d4e; background:#072313; color:#bbf7d0 }
+    .chip.miss{ border-color:#6b7280; background:#0b0e16; color:#cbd5e1 }
+    .warn{ color:#fcd34d }
+    .danger{ color:var(--danger) }
+    .muted{ color:#9ca3af }
+
+    .recipe{
+      background:#0b1222; border:1px solid #1f2937; border-radius:12px; padding:14px;
+    }
+    .recipe h2{ margin:0 0 8px; font-size:1.25rem }
+    .recipe h4{ margin:14px 0 6px; color:#c7d2fe }
+    .recipe ul{ margin:6px 0 0 1rem }
+    .recipe li{ margin:4px 0 }
+
+    .footer-note{ text-align:center; color:var(--muted); font-size:.86rem; padding:12px 8px }
+  </style>
+</head>
+<body>
+<header>
+  <h1>👩‍🍳 Sugeridor de Recetas por Ingredientes</h1>
+  <p>Marca las <strong>verduras, frutas y carnes</strong> que tienes. Te sugiero la mejor receta posible con lo que hay.</p>
+</header>
+
+<div class="wrap">
+  <!-- Panel de selección -->
+  <section class="card">
+    <h2>Selecciona tus ingredientes</h2>
+    <div class="content">
+      <div class="cols">
+        <div class="group">
+          <h3>🥦 Verduras</h3>
+          <div id="list-verduras" class="list"></div>
+        </div>
+        <div class="group">
+          <h3>🍎 Frutas</h3>
+          <div id="list-frutas" class="list"></div>
+        </div>
+        <div class="group">
+          <h3>🥩 Carnes y mariscos</h3>
+          <div id="list-carnes" class="list"></div>
+        </div>
+      </div>
+      <div class="tools">
+        <!-- Fallback con onclick por si fallara el binding JS -->
+        <button id="btn-sugerir" class="primary" onclick="sugerirClick()">🔎 Sugerir receta</button>
+        <button id="btn-otra" onclick="otraClick()">🎲 Ver otra sugerencia</button>
+        <button id="btn-limpiar" class="ghost" onclick="limpiarClick()">🧹 Limpiar selección</button>
+      </div>
+      <p class="muted" style="margin-top:8px">Tip: tu selección se guarda automáticamente en este navegador.</p>
+    </div>
+  </section>
+
+  <!-- Resultados -->
+  <section class="card">
+    <h2>Resultado</h2>
+    <div class="content">
+      <div id="match" class="result muted">Aún no hay sugerencias. Elige algunos ingredientes y presiona <b>Sugerir receta</b>.</div>
+      <div id="recipe" class="recipe" style="display:none"></div>
+    </div>
+  </section>
+</div>
+
+<p class="footer-note">Hecho con ❤️ para ayudarte a cocinar con lo que tienes en casa.</p>
+
 <script>
 /* =======================
    Utilidades
@@ -12,8 +147,6 @@ function showError(msg){
 
 /* =======================
    Catálogos (50+ cada uno)
-   *No es necesario cambiar estos si ya los tenías iguales,
-   *pero los incluyo completos para que puedas pegar y listo.
 ======================= */
 const VERDURAS = [
   "Tomate","Jitomate cherry","Tomatillo",
@@ -72,7 +205,7 @@ const NORM = {
   "chicharo":"Chícharo","chícharos":"Chícharo","chicharos":"Chícharo",
   "elote":"Elote/maíz","maiz":"Elote/maíz","maíz":"Elote/maíz",
   "champiñon":"Champiñón","champinion":"Champiñón","hongo":"Champiñón","hongos":"Champiñón",
-  "pimiento":"Pimiento rojo", // valor por defecto si alguien usa genérico
+  "pimiento":"Pimiento rojo",
   "cebolla":"Cebolla blanca"
 };
 function normalizeName(x) {
@@ -81,10 +214,9 @@ function normalizeName(x) {
 }
 
 /* =======================
-   Recetas (se agregan vegetarianas que cubren tu caso)
+   Recetas (incluye vegetarianas que cubren papa+champiñón+chícharo+elote)
 ======================= */
 const RECETAS = [
-  // Algunas existentes
   { nombre: "Fajitas de res con pimiento y cebolla", required:["Res en tiras","Pimiento rojo","Cebolla blanca"], optional:["Ajo","Calabacita","Limón","Cilantro"], pasos:[
     "Corta la res en tiras y sazona con sal, pimienta y limón.",
     "Saltea cebolla y pimiento a fuego alto 2–3 min.",
@@ -105,8 +237,6 @@ const RECETAS = [
     "Agrega agua/caldo + zanahoria y papa; hierve hasta suavizar.",
     "Añade el resto y cuece 5–8 min."
   ]},
-
-  // 🔥 NUEVAS que cubren tu selección:
   {
     nombre: "Salteado de papa, champiñón, chícharo y elote",
     required: ["Papa","Champiñón","Chícharo"],
@@ -127,8 +257,6 @@ const RECETAS = [
       "Hierve suave 10–12 min hasta que la papa esté tierna. Ajusta sal y decora con perejil."
     ]
   },
-
-  // Más ejemplos vegetarianos útiles
   {
     nombre: "Champiñones con elote y calabacita al comal",
     required: ["Champiñón","Elote/maíz","Calabacita"],
@@ -198,7 +326,6 @@ function saveSelection(){
 function restoreSelection(){
   const saved = JSON.parse(localStorage.getItem(KEY) || '[]');
   document.querySelectorAll('input[type="checkbox"]').forEach(i => {
-    // Marca si coincide exactamente o si la normalización hace match
     const v = i.value;
     const n = normalizeName(v);
     i.checked = saved.includes(v) || saved.includes(n);
@@ -209,7 +336,6 @@ function restoreSelection(){
    Motor de coincidencias
 ======================= */
 function puntuarReceta(rec, seleccionSet){
-  // Normaliza internamente los nombres de la receta también
   const req = (rec.required||[]).map(normalizeName);
   const opt = (rec.optional||[]).map(normalizeName);
   const tieneReq = req.filter(x=>seleccionSet.has(x));
@@ -223,7 +349,7 @@ function puntuarReceta(rec, seleccionSet){
 }
 
 /* =======================
-   Plan B: recetas generadas con lo que haya
+   Plan B: recetas auto-generadas con lo que haya
 ======================= */
 function buildVegStirFry(sel){
   const veg = [...sel].filter(x => VERDURAS.includes(x));
@@ -275,8 +401,6 @@ function buildMeatStirFry(sel){
     __auto:true
   };
 }
-
-/* Devuelve una o más recetas generadas automáticamente (si aplica) */
 function fallbacks(seleccionSet){
   const res = [];
   const f1 = buildMeatStirFry(seleccionSet); if(f1) res.push(f1);
@@ -300,7 +424,6 @@ function sugerir(seleccionSet){
     const autos = fallbacks(seleccionSet);
     evaluadas = autos.map(rec => {
       const ev = puntuarReceta(rec, seleccionSet);
-      // Para auto-recetas, las marcamos como "cumple" siempre que tenga al menos 2 ingredientes
       const tieneTotal = (ev.tieneReq.length + ev.tieneOpt.length);
       return { rec, ...ev, cumple: (tieneTotal >= 2) };
     }).filter(x => x.cumple);
@@ -308,7 +431,6 @@ function sugerir(seleccionSet){
 
   // 3) Ordena por score y por menos faltantes
   evaluadas.sort((a,b)=> (b.score - a.score) || (a.faltan.length - b.faltan.length));
-
   alternativas = evaluadas;
   idxAlt = 0;
   return alternativas[0];
@@ -439,3 +561,5 @@ document.addEventListener('DOMContentLoaded', function(){
   }
 });
 </script>
+</body>
+</html>
